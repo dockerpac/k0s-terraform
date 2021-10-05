@@ -5,6 +5,7 @@ This directory provides an example flow for using k0sctl with Terraform and AWS.
 ## Prerequisites
 
 * An account and credentials for AWS.
+* k0sctl [installed](https://github.com/k0sproject/k0sctl/releases)
 * Terraform [installed](https://learn.hashicorp.com/terraform/getting-started/install)
 
 ## Steps
