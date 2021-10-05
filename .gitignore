@@ -1,0 +1,7 @@
+*.tfvars
+.terraform/
+*terraform.tfstate*
+.terraform.lock.hcl
+kubeconfig*
+ssh_keys/*
+.DS_Store
