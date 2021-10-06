@@ -6,5 +6,9 @@ variable "host_cidr" {
 }
 
 variable "multi_az" {
-  default = "true"
+  default = "false"
+}
+
+variable "private_network" {
+  default = "false"
 }

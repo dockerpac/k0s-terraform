@@ -5,7 +5,7 @@ resource "aws_security_group" "worker" {
 }
 
 locals {
-  subnet_count = length(var.subnet_ids)
+  instance_subnet_count = length(var.instance_subnet_ids)
 }
 
 
@@ -23,7 +23,7 @@ resource "aws_instance" "k0s_worker" {
   ami                    = var.image_id
   key_name               = var.ssh_key
   vpc_security_group_ids = [var.security_group_id, aws_security_group.worker.id]
-  subnet_id              = var.subnet_ids[count.index % local.subnet_count]
+  subnet_id              = var.instance_subnet_ids[count.index % local.instance_subnet_count]
   ebs_optimized          = true
   user_data              = <<EOF
 #!/bin/bash

@@ -2,3 +2,4 @@ k0s_version = "1.22.2+k0s.0"
 controller_count = 1
 worker_count = 1
 multi_az = false
+private_network = false

@@ -58,3 +58,7 @@ variable "worker_volume_size" {
 variable "multi_az" {
   default = "false"
 }
+
+variable "private_network" {
+  default = "false"
+}

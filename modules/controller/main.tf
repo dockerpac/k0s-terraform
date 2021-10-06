@@ -1,5 +1,5 @@
 locals {
-  private_subnet_count = "${length(var.private_subnet_ids)}"
+  instance_subnet_count = "${length(var.instance_subnet_ids)}"
 }
 
 resource "aws_security_group" "controller" {
@@ -44,7 +44,7 @@ resource "aws_instance" "k0s_controller" {
   ami                    = var.image_id
   key_name               = var.ssh_key
   vpc_security_group_ids = [var.security_group_id, aws_security_group.controller.id]
-  subnet_id              = var.private_subnet_ids[count.index % local.private_subnet_count]
+  subnet_id              = var.instance_subnet_ids[count.index % local.instance_subnet_count]
   ebs_optimized          = true
   user_data              = <<EOF
 #!/bin/bash
@@ -69,7 +69,7 @@ resource "aws_lb" "k0s_controller" {
   name                              = "${var.cluster_name}-controller-lb"
   internal                          = false
   load_balancer_type                = "network"
-  subnets                           = var.public_subnet_ids
+  subnets                           = var.nlb_subnet_ids
   enable_cross_zone_load_balancing  = false
 
   tags = {

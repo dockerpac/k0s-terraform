@@ -6,11 +6,11 @@ variable "instance_profile_name" {}
 
 variable "security_group_id" {}
 
-variable "public_subnet_ids" {
+variable "nlb_subnet_ids" {
   type = list(string)
 }
 
-variable "private_subnet_ids" {
+variable "instance_subnet_ids" {
   type = list(string)
 }
 

@@ -45,7 +45,9 @@ resource "aws_route_table" "public" {
   depends_on                = [aws_internet_gateway.igw]
 }
 
-# Public Subnet
+// ######################
+// PUBLIC
+// ######################
 resource "aws_subnet" "public" {
   count = local.az_count
 
@@ -72,7 +74,7 @@ resource "aws_route_table_association" "public" {
 // PRIVATE
 // ######################
 resource "aws_eip" "eip" {
-  count          = length(aws_subnet.public)
+  count  = var.private_network ? length(aws_subnet.public) : 0
 
   vpc = true
 
@@ -84,7 +86,7 @@ resource "aws_eip" "eip" {
 }
 
 resource "aws_nat_gateway" "natgateway" {
-  count          = length(aws_subnet.public)
+  count  = var.private_network ? length(aws_subnet.public) : 0
 
   allocation_id = element(aws_eip.eip.*.id, count.index)
   subnet_id     = element(aws_subnet.public.*.id, count.index)
@@ -99,7 +101,7 @@ resource "aws_nat_gateway" "natgateway" {
 }
 
 resource "aws_route_table" "private" {
-  count          = length(aws_subnet.public)
+  count  = var.private_network ? length(aws_subnet.public) : 0
 
   vpc_id = aws_vpc.vpc.id
 
@@ -115,7 +117,7 @@ resource "aws_route_table" "private" {
 
 # Private Subnets (one per availability zone)
 resource "aws_subnet" "private" {
-  count = local.az_count
+  count  = var.private_network ? length(aws_subnet.public) : 0
 
   vpc_id            = aws_vpc.vpc.id
   availability_zone = data.aws_availability_zones.all.names[count.index]
