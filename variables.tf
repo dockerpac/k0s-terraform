@@ -19,12 +19,20 @@ variable "vpc_cidr" {
   default = "172.31.0.0/16"
 }
 
+variable "bastion_count" {
+  default = 1
+}
+
 variable "controller_count" {
   default = 1
 }
 
 variable "worker_count" {
   default = 1
+}
+
+variable "bastion_type" {
+  default = "t3.micro"
 }
 
 variable "controller_type" {
@@ -35,10 +43,18 @@ variable "worker_type" {
   default = "m5.large"
 }
 
+variable "bastion_volume_size" {
+  default = 100
+}
+
 variable "controller_volume_size" {
   default = 100
 }
 
 variable "worker_volume_size" {
   default = 100
+}
+
+variable "multi_az" {
+  default = "false"
 }

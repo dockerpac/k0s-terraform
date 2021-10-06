@@ -6,11 +6,27 @@ module "vpc" {
   source       = "./modules/vpc"
   cluster_name = local.cluster_name
   host_cidr    = var.vpc_cidr
+  multi_az     = var.multi_az
 }
+
 module "common" {
   source       = "./modules/common"
   cluster_name = local.cluster_name
   vpc_id       = module.vpc.id
+}
+
+module "bastion" {
+  source                = "./modules/bastion"
+  bastion_count         = var.bastion_count
+  vpc_id                = module.vpc.id
+  cluster_name          = local.cluster_name
+  public_subnet_ids     = module.vpc.public_subnet_ids
+  security_group_id     = module.common.security_group_id
+  image_id              = module.common.image_id
+  kube_cluster_tag      = module.common.kube_cluster_tag
+  ssh_key               = local.cluster_name
+  instance_profile_name = module.common.instance_profile_name
+  bastion_type          = var.bastion_type
 }
 
 module "controllers" {
@@ -18,7 +34,8 @@ module "controllers" {
   controller_count      = var.controller_count
   vpc_id                = module.vpc.id
   cluster_name          = local.cluster_name
-  subnet_ids            = module.vpc.public_subnet_ids
+  public_subnet_ids     = module.vpc.public_subnet_ids
+  private_subnet_ids    = module.vpc.private_subnet_ids
   security_group_id     = module.common.security_group_id
   image_id              = module.common.image_id
   kube_cluster_tag      = module.common.kube_cluster_tag
@@ -27,12 +44,13 @@ module "controllers" {
   controller_type       = var.controller_type
 }
 
+
 module "workers" {
   source                = "./modules/worker"
   worker_count          = var.worker_count
   vpc_id                = module.vpc.id
   cluster_name          = local.cluster_name
-  subnet_ids            = module.vpc.public_subnet_ids
+  subnet_ids            = module.vpc.private_subnet_ids
   security_group_id     = module.common.security_group_id
   image_id              = module.common.image_id
   kube_cluster_tag      = module.common.kube_cluster_tag
@@ -45,21 +63,30 @@ locals {
   controllers = [
     for host in module.controllers.machines : {
       ssh = {
-        address = host.public_ip
+        address = host.private_ip
         user    = "ubuntu"
-        keyPath = "./ssh_keys/${local.cluster_name}.pem"
+        bastion = { 
+          address = module.bastion.public_ips[0] # Use 1st bastion
+          user    = "ubuntu"
+          keyPath = "./ssh_keys/${local.cluster_name}.pem"
+        }
       }
-      role             = "controller+worker"
+      #role = "controller+worker"
+      role = "controller"
     }
   ]
   workers = [
     for host in module.workers.machines : {
       ssh = {
-        address = host.public_ip
+        address = host.private_ip
         user    = "ubuntu"
-        keyPath = "./ssh_keys/${local.cluster_name}.pem"
+        bastion = { 
+          address = module.bastion.public_ips[0] # Use 1st bastion
+          user    = "ubuntu"
+          keyPath = "./ssh_keys/${local.cluster_name}.pem"
+        }
       }
-      role             = "worker"
+      role  = "worker"
     }
   ]
   launchpad_tmpl = {
@@ -74,10 +101,13 @@ locals {
         config = {
           spec = {
             api = {
-              address = "${module.controllers.lb_dns_name}"
+              externalAddress = "${module.controllers.lb_dns_name}"
               sans = [
                 "${module.controllers.lb_dns_name}"
               ]
+            }
+            network = {
+              provider = "calico"
             }
           }
         }

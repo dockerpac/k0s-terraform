@@ -10,10 +10,6 @@ variable "public_subnet_ids" {
   type = list(string)
 }
 
-variable "private_subnet_ids" {
-  type = list(string)
-}
-
 variable "image_id" {}
 
 variable "kube_cluster_tag" {}
@@ -22,14 +18,14 @@ variable "ssh_key" {
   description = "SSH key name"
 }
 
-variable "controller_count" {
-  default = 3
+variable "bastion_type" {
+  default = "t3.micro"
 }
 
-variable "controller_type" {
-  default = "m5.large"
-}
-
-variable "controller_volume_size" {
+variable "bastion_volume_size" {
   default = 100
+}
+
+variable "bastion_count" {
+  default = 1
 }

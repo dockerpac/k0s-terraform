@@ -24,7 +24,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-*-20.04-amd64-server-*"]
   }
 
   filter {
@@ -37,7 +37,7 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_security_group" "common" {
   name        = "${var.cluster_name}-common"
-  description = "mke cluster common rules"
+  description = "k0s cluster common rules"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -45,13 +45,6 @@ resource "aws_security_group" "common" {
     to_port   = 0
     protocol  = "-1"
     self      = true
-  }
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
