@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dockerdemo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dockerdemo
+  template:
+    metadata:
+      labels:
+        app: dockerdemo
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - dockerdemo
+              topologyKey: dc
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - dockerdemo
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: dockerdemo
+        image: dockerpac/docker-demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dockerdemo
+  labels:
+    app: dockerdemo
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: dockerdemo
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dockerdemo
+  labels:
+    app: dockerdemo
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ${EXTERNAL_DNS}
+    http:
+      paths:
+      - backend:
+          service:
+            name: dockerdemo
+            port: 
+              number: 8080
+        path: /
+        pathType: Prefix

@@ -73,6 +73,9 @@ locals {
         }
       }
       role = "controller+worker"
+      installFlags : [
+        "- --enable-cloud-provider=true"
+      ]
     }
   ]
   workers = [
@@ -87,6 +90,9 @@ locals {
         }
       }
       role  = "worker"
+      installFlags : [
+        "- --enable-cloud-provider=true"
+      ]
     }
   ]
   launchpad_tmpl = {
